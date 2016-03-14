@@ -1,0 +1,46 @@
+docker ubuntu
+docker used originally the LXC interface of Linux kernel, but in the meanwhile own interface libcontainer.
+Overlay file system aufs
+Im Gegensatz zu anderen Systemen realisiert LXC seine Virtualisierung nicht mittels virtueller Maschinen. Stattdessen erzeugt LXC eine virtuelle Umgebung, die zwar ihre eigenen Prozesse besitzt, doch für diese gemeinschaftlich den Kernel des Hostsystems nutzt.
+
+LXC besteht aus einer Programmbibliothek, diversen APIs für Python, Lua und Go, Containervorlagen sowie Werkzeugen zur Kontrolle der Container. Jene verwendet neben Kernelnamensräumen weitere Funktionen des Linuxkernels, wie etwa SELinux und cgroups.
+
+Während die Kernelnamensräume die Prozesse von anderen abschotten (Prozesse außerhalb der Namensräume sind nicht sichtbar) sorgen die cgroups für eine Ressourcenverwaltung. Hierüber kann zum Beispiel die Speichergröße eingeschränkt, der Datendurchsatz im Netzwerk oder auf Festplatten begrenzt oder die Zahl der verfügbaren CPUs bestimmt werden.
+
+
+LXC stellt eine erweiterte chroot-Umgebung zur Verfügung und lässt sich insofern mit BSD-jails und Linux-VServer vergleichen.
+
+chroot steht für „change root“ und ist eine Funktion unter Unix-Systemen, um das Rootverzeichnis zu ändern. Sie wirkt sich nur auf den aktuellen Prozess und seine Kindprozesse aus. Ein Programm, das auf ein Verzeichnis „gerootet“ wurde und keine offenen Dateideskriptoren in den Bereich außerhalb des virtuellen Root-Verzeichnisses besitzt, kann (bei korrekter Implementierung des Betriebssystemkerns) nicht mehr auf Dateien außerhalb dieses Verzeichnisses zugreifen. 
+Ab Kernelversion 3.12 können Kernel-Namespaces[1] für ipc, uts, mount, pid, network und user verwendet werden. Damit besteht ab LXC-Version 1.0 die Möglichkeit, einen Container unter einer anderen UID als der von root zu starten. Damit sind viele Sicherheitsprobleme behoben, insbesondere kann vom Container aus das Hostsystem nicht mehr verändert werden, wie zum Beispiel über das Schreiben in die Datei /proc/sysrq-trigger.
+Da die Ressourcentrennung alleine mit den Docker zugrunde liegenden Techniken wie Namespaces und Cgroups nicht völlig sicher ist, hat die Firma Red Hat Unterstützung für die Sicherheitstechnologie SELinux implementiert, welche die Container auf der Ebene des Host-Systems zusätzlich absichert.
+Dockerhoster Cloudcontrol ist insolvent http://www.paasfinder.com/dotcloud-paas-now-part-of-cloudcontrol/
+
+Image
+    ein Image ist bei Docker eine portable Abbildung eines Containers.
+Container
+    ein Container ist ein lauffähiges, virtuelles Betriebssystem.
+Dockerfile
+    eine Textdatei, die Befehle enthält, um ein Image den eigenen Anforderungen anzupassen.
+Docker Hub
+    ein Online-Dienst, der eine Registry für Docker-Images und Repositorys beinhaltet
+libcontainer
+    eine Schnittstelle zu den Grundfunktionen von Docker.
+libswarm
+    eine Schnittstelle um Docker-Container zu steuern.
+libchan
+    eine Schnittstelle zu Dockers Netzwerkfunktionen. 
+
+
+
+
+required packages:
+sudo apt-get install linux-image-generic-lts-trusty
+
+get latest docker
+curl -sSL https://get.docker.com/ | sh
+	behind a firewall: curl -sSL https://get.docker.com/gpg | sudo apt-key add -
+
+The docker daemon binds to a Unix socket instead of a TCP port. By default that Unix socket is owned by the user root and other users can access it with sudo. For this reason, docker daemon always runs as the root user.
+
+make user part of docker group:
+sudo usermod -aG docker mark
