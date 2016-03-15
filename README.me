@@ -12,11 +12,12 @@
 
 ## Install docker on Ubuntu
 
-sudo apt-get install linux-image-generic-lts-trusty
+`sudo apt-get install linux-image-generic-lts-trusty`
 
-get latest docker
-curl -sSL https://get.docker.com/ | sh
-	behind a firewall: curl -sSL https://get.docker.com/gpg | sudo apt-key add -
+get latest docker:
+`curl -sSL https://get.docker.com/ | sh`
+
+behind a firewall: curl -sSL https://get.docker.com/gpg | sudo apt-key add -
 
 The docker daemon binds to a Unix socket instead of a TCP port. By default that Unix socket is owned by the user root and other users can access it with sudo. For this reason, docker daemon always runs as the root user.
 
