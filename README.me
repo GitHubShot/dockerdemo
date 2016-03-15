@@ -1,6 +1,7 @@
-
 # Dockerizing Web App Stack
-## Building Blocks of Docker:
+
+## Building Blocks of Docker
+
 * Image - An image is a portable artifact representing a Docker Container.
 * Container - A Docker container is a runnable virtual OS.
 * Dockerfile - A Docker file is a text file to adapt existing images according customer needs.
@@ -10,6 +11,7 @@
 * libchan - Libchan is an ultra-lightweight networking library (Docker Plug-In) which lets network services communicate in the same way that goroutines communicate using channels:
 
 ## Install docker on Ubuntu
+
 sudo apt-get install linux-image-generic-lts-trusty
 
 get latest docker
@@ -73,6 +75,7 @@ RUN command to "touch" the jar file so that it has a file modification time (Doc
 ```
 
 Maven plugin required (delivered by Transmode, Spotify)
+```
 <plugin>
             <groupId>com.spotify</groupId>
             <artifactId>docker-maven-plugin</artifactId>
@@ -89,6 +92,7 @@ Maven plugin required (delivered by Transmode, Spotify)
                 </resources>
             </configuration>
         </plugin>
+```
 
 `mvn package docker:build`
 `docker push mauermbq/gs-spring-boot-docker`
