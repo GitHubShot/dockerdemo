@@ -1,23 +1,15 @@
 
-Dockerizing Web App Stack
-Building Blocks of Docker:
-Image
-    An image is a portable artifact representing a Docker Container.
-Container
-    A Docker container is a runnable virtual OS.
-Dockerfile
-    A Docker file is a text file to adapt existing images according customer needs.
-Docker Hub
-    The Docker hub is a public registry and repository to publish Docker-Images
-libcontainer
-    Lib container is the standard interface to Linux kernel virtualization that tandardize the way apps are packed up, delivered, and run in isolation -- and one that developers, not just sys admins, can hook into and implement (also ported to Windows, see https://blog.docker.com/2015/06/open-container-project-foundation/).
-libswarm
-    Libswarm is a library that  make it relatively trivial to compose other disparate tools together, including but not limited to orchestration tools.
-libchan
-    Libchan is an ultra-lightweight networking library (Docker Plug-In) which lets network services communicate in the same way that goroutines communicate using channels:
+# Dockerizing Web App Stack
+## Building Blocks of Docker:
+* Image - An image is a portable artifact representing a Docker Container.
+* Container - A Docker container is a runnable virtual OS.
+* Dockerfile - A Docker file is a text file to adapt existing images according customer needs.
+* Docker Hub - The Docker hub is a public registry and repository to publish Docker-Images
+* libcontainer - Lib container is the standard interface to Linux kernel virtualization that tandardize the way apps are packed up, delivered, and run in isolation -- and one that developers, not just sys admins, can hook into and implement (also ported to Windows, see https://blog.docker.com/2015/06/open-container-project-foundation/).
+* libswarm - Libswarm is a library that  make it relatively trivial to compose other disparate tools together, including but not limited to orchestration tools.
+* libchan - Libchan is an ultra-lightweight networking library (Docker Plug-In) which lets network services communicate in the same way that goroutines communicate using channels:
 
-
-required packages for Ubuntu as docker host:
+## Install docker on Ubuntu
 sudo apt-get install linux-image-generic-lts-trusty
 
 get latest docker
@@ -27,49 +19,48 @@ curl -sSL https://get.docker.com/ | sh
 The docker daemon binds to a Unix socket instead of a TCP port. By default that Unix socket is owned by the user root and other users can access it with sudo. For this reason, docker daemon always runs as the root user.
 
 make user part of docker group:
-sudo usermod -aG docker mark
+`sudo usermod -aG docker mark`
 
 If firewall ufw:
+```
 /etc/default/ufw
 DEFAULT_FORWARD_POLICY="ACCEPT"
-
-On desctop with local DNS 127.0.0.1 and dns masc
-/etc/default/docker DOCKER_OPTS="--dns 8.8.8.8"
-oO disable dns masc /etc/NetworkManager/NetworkManager.conf #dns=dnsmasq
+```
+On desctop with local DNS 127.0.0.1 and dns masc:
+`/etc/default/docker DOCKER_OPTS="--dns 8.8.8.8"`
+disable dns masc /etc/NetworkManager/NetworkManager.conf #dns=dnsmasq
 
 restart docker: sudo restart docker
-
-    *Dockerize your applications.
-    *Run your own containers.
-    *Build Docker images.
-    *Share your Docker images with others.
-    *And a whole lot more!
-
+* Dockerize your applications.
+* Run your own containers.
+* Build Docker images.
+* Share your Docker images with others.
+* And a whole lot more!
 
 Simple docker run 
- docker run ubuntu:14.04 /bin/echo 'Hello world'
+` docker run ubuntu:14.04 /bin/echo 'Hello world'`
 Hello world
 
 Using Flags:
 -t assign terminal
 -i make interactie
- docker run -t -i ubuntu:14.04 /bin/bash --> open shell in container
+`docker run -t -i ubuntu:14.04 /bin/bash` --> open shell in container
 
  -d flag tells Docker to run the container and put it in the background, to daemonize it.
 
 Important commands:
-    docker ps - Lists containers.
-    docker logs - Shows us the standard output of a container.
-    docker stop - Stops running containers.
+docker ps - Lists containers.
+docker logs - Shows us the standard output of a container.
+docker stop - Stops running containers.
 
-
-Springboot docker:
+##Springboot docker
 https://spring.io/guides/gs/spring-boot-docker/#initial
 mvn package && java -jar target/gs-spring-boot-docker-0.1.0.jar
 Dockerize springboot
 src/main/docker/Dockerfile
 
 Dockerfile:
+```
 FROM java:8
 VOLUME /tmp
 ADD gs-spring-boot-docker-0.1.0.jar app.jar
@@ -79,6 +70,7 @@ ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
 VOLUME pointing to "/tmp" because that is where a Spring Boot application creates working directories for Tomcat by default. The effect is to create a temporary file on your host under "/var/lib/docker" and link it to the container under "/tmp". This step is optional for the simple app that we wrote here, but can be necessary for other Spring Boot applications if they need to actually write in the filesystem.
 
 RUN command to "touch" the jar file so that it has a file modification time (Docker creates all container files in an "unmodified" state by default). This actually isn’t important for the simple app that we wrote, but any static content (e.g. "index.html") would require the file to have a modification time. 
+```
 
 Maven plugin required (delivered by Transmode, Spotify)
 <plugin>
@@ -98,13 +90,13 @@ Maven plugin required (delivered by Transmode, Spotify)
             </configuration>
         </plugin>
 
-mvn package docker:build
-docker push mauermbq/gs-spring-boot-docker
-docker run -p 8080:8080 -t mauermbq/gs-spring-boot-docker
+`mvn package docker:build`
+`docker push mauermbq/gs-spring-boot-docker`
+`docker run -p 8080:8080 -t mauermbq/gs-spring-boot-docker`
 
-Run spring app behin a reverse proxy:
-docker run --name nginx-container -v $(pwd)/html:/usr/share/nginx/html:ro --link spring-app:app -p 80:80 -d -t mauermbq/nginx_img_proxy
+Run spring app behind a reverse proxy (nginx container can be found on docker hub):
+`docker run --name nginx-container -v $(pwd)/html:/usr/share/nginx/html:ro --link spring-app:app -p 80:80 -d -t mauermbq/nginx_img_proxy`
 
 Login in to nginx container and check for linked app container:
-docker exec -it nginx-container bash
-env | grep APP | sort
+`docker exec -it nginx-container bash`
+`env | grep APP | sort`
