@@ -1,39 +1,23 @@
-docker ubuntu
-docker used originally the LXC interface of Linux kernel, but in the meanwhile own interface libcontainer.
-Overlay file system aufs
-Im Gegensatz zu anderen Systemen realisiert LXC seine Virtualisierung nicht mittels virtueller Maschinen. Stattdessen erzeugt LXC eine virtuelle Umgebung, die zwar ihre eigenen Prozesse besitzt, doch für diese gemeinschaftlich den Kernel des Hostsystems nutzt.
 
-LXC besteht aus einer Programmbibliothek, diversen APIs für Python, Lua und Go, Containervorlagen sowie Werkzeugen zur Kontrolle der Container. Jene verwendet neben Kernelnamensräumen weitere Funktionen des Linuxkernels, wie etwa SELinux und cgroups.
-
-Während die Kernelnamensräume die Prozesse von anderen abschotten (Prozesse außerhalb der Namensräume sind nicht sichtbar) sorgen die cgroups für eine Ressourcenverwaltung. Hierüber kann zum Beispiel die Speichergröße eingeschränkt, der Datendurchsatz im Netzwerk oder auf Festplatten begrenzt oder die Zahl der verfügbaren CPUs bestimmt werden.
-
-
-LXC stellt eine erweiterte chroot-Umgebung zur Verfügung und lässt sich insofern mit BSD-jails und Linux-VServer vergleichen.
-
-chroot steht für „change root“ und ist eine Funktion unter Unix-Systemen, um das Rootverzeichnis zu ändern. Sie wirkt sich nur auf den aktuellen Prozess und seine Kindprozesse aus. Ein Programm, das auf ein Verzeichnis „gerootet“ wurde und keine offenen Dateideskriptoren in den Bereich außerhalb des virtuellen Root-Verzeichnisses besitzt, kann (bei korrekter Implementierung des Betriebssystemkerns) nicht mehr auf Dateien außerhalb dieses Verzeichnisses zugreifen. 
-Ab Kernelversion 3.12 können Kernel-Namespaces[1] für ipc, uts, mount, pid, network und user verwendet werden. Damit besteht ab LXC-Version 1.0 die Möglichkeit, einen Container unter einer anderen UID als der von root zu starten. Damit sind viele Sicherheitsprobleme behoben, insbesondere kann vom Container aus das Hostsystem nicht mehr verändert werden, wie zum Beispiel über das Schreiben in die Datei /proc/sysrq-trigger.
-Da die Ressourcentrennung alleine mit den Docker zugrunde liegenden Techniken wie Namespaces und Cgroups nicht völlig sicher ist, hat die Firma Red Hat Unterstützung für die Sicherheitstechnologie SELinux implementiert, welche die Container auf der Ebene des Host-Systems zusätzlich absichert.
-Dockerhoster Cloudcontrol ist insolvent http://www.paasfinder.com/dotcloud-paas-now-part-of-cloudcontrol/
-
+Dockerizing Web App Stack
+Building Blocks of Docker:
 Image
-    ein Image ist bei Docker eine portable Abbildung eines Containers.
+    An image is a portable artifact representing a Docker Container.
 Container
-    ein Container ist ein lauffähiges, virtuelles Betriebssystem.
+    A Docker container is a runnable virtual OS.
 Dockerfile
-    eine Textdatei, die Befehle enthält, um ein Image den eigenen Anforderungen anzupassen.
+    A Docker file is a text file to adapt existing images according customer needs.
 Docker Hub
-    ein Online-Dienst, der eine Registry für Docker-Images und Repositorys beinhaltet
+    The Docker hub is a public registry and repository to publish Docker-Images
 libcontainer
-    eine Schnittstelle zu den Grundfunktionen von Docker.
+    Lib container is the standard interface to Linux kernel virtualization that tandardize the way apps are packed up, delivered, and run in isolation -- and one that developers, not just sys admins, can hook into and implement (also ported to Windows, see https://blog.docker.com/2015/06/open-container-project-foundation/).
 libswarm
-    eine Schnittstelle um Docker-Container zu steuern.
+    Libswarm is a library that  make it relatively trivial to compose other disparate tools together, including but not limited to orchestration tools.
 libchan
-    eine Schnittstelle zu Dockers Netzwerkfunktionen. 
+    Libchan is an ultra-lightweight networking library (Docker Plug-In) which lets network services communicate in the same way that goroutines communicate using channels:
 
 
-
-
-required packages:
+required packages for Ubuntu as docker host:
 sudo apt-get install linux-image-generic-lts-trusty
 
 get latest docker
@@ -44,3 +28,83 @@ The docker daemon binds to a Unix socket instead of a TCP port. By default that 
 
 make user part of docker group:
 sudo usermod -aG docker mark
+
+If firewall ufw:
+/etc/default/ufw
+DEFAULT_FORWARD_POLICY="ACCEPT"
+
+On desctop with local DNS 127.0.0.1 and dns masc
+/etc/default/docker DOCKER_OPTS="--dns 8.8.8.8"
+oO disable dns masc /etc/NetworkManager/NetworkManager.conf #dns=dnsmasq
+
+restart docker: sudo restart docker
+
+    *Dockerize your applications.
+    *Run your own containers.
+    *Build Docker images.
+    *Share your Docker images with others.
+    *And a whole lot more!
+
+
+Simple docker run 
+ docker run ubuntu:14.04 /bin/echo 'Hello world'
+Hello world
+
+Using Flags:
+-t assign terminal
+-i make interactie
+ docker run -t -i ubuntu:14.04 /bin/bash --> open shell in container
+
+ -d flag tells Docker to run the container and put it in the background, to daemonize it.
+
+Important commands:
+    docker ps - Lists containers.
+    docker logs - Shows us the standard output of a container.
+    docker stop - Stops running containers.
+
+
+Springboot docker:
+https://spring.io/guides/gs/spring-boot-docker/#initial
+mvn package && java -jar target/gs-spring-boot-docker-0.1.0.jar
+Dockerize springboot
+src/main/docker/Dockerfile
+
+Dockerfile:
+FROM java:8
+VOLUME /tmp
+ADD gs-spring-boot-docker-0.1.0.jar app.jar
+RUN bash -c 'touch /app.jar'
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+
+VOLUME pointing to "/tmp" because that is where a Spring Boot application creates working directories for Tomcat by default. The effect is to create a temporary file on your host under "/var/lib/docker" and link it to the container under "/tmp". This step is optional for the simple app that we wrote here, but can be necessary for other Spring Boot applications if they need to actually write in the filesystem.
+
+RUN command to "touch" the jar file so that it has a file modification time (Docker creates all container files in an "unmodified" state by default). This actually isn’t important for the simple app that we wrote, but any static content (e.g. "index.html") would require the file to have a modification time. 
+
+Maven plugin required (delivered by Transmode, Spotify)
+<plugin>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.2.3</version>
+            <configuration>
+                <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+                <dockerDirectory>src/main/docker</dockerDirectory>
+                <resources>
+                    <resource>
+                        <targetPath>/</targetPath>
+                        <directory>${project.build.directory}</directory>
+                        <include>${project.build.finalName}.jar</include>
+                    </resource>
+                </resources>
+            </configuration>
+        </plugin>
+
+mvn package docker:build
+docker push mauermbq/gs-spring-boot-docker
+docker run -p 8080:8080 -t mauermbq/gs-spring-boot-docker
+
+Run spring app behin a reverse proxy:
+docker run --name nginx-container -v $(pwd)/html:/usr/share/nginx/html:ro --link spring-app:app -p 80:80 -d -t mauermbq/nginx_img_proxy
+
+Login in to nginx container and check for linked app container:
+docker exec -it nginx-container bash
+env | grep APP | sort
