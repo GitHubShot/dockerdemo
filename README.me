@@ -1,4 +1,3 @@
-
 # Dockerizing Web App Stack
 
 Building Blocks of Docker
@@ -13,17 +12,18 @@ Building Blocks of Docker
 
 ## Install docker on Ubuntu
 
-`sudo apt-get install linux-image-generic-lts-trusty`
+```sudo apt-get install linux-image-generic-lts-trusty```
 
 get latest docker:
-`curl -sSL https://get.docker.com/ | sh`
+```curl -sSL https://get.docker.com/ | sh```
 
 behind a firewall: curl -sSL https://get.docker.com/gpg | sudo apt-key add -
 
 The docker daemon binds to a Unix socket instead of a TCP port. By default that Unix socket is owned by the user root and other users can access it with sudo. For this reason, docker daemon always runs as the root user.
 
 make user part of docker group:
-`sudo usermod -aG docker mark`
+
+```sudo usermod -aG docker mark```
 
 If firewall ufw:
 ```
@@ -31,7 +31,7 @@ If firewall ufw:
 DEFAULT_FORWARD_POLICY="ACCEPT"
 ```
 On desctop with local DNS 127.0.0.1 and dns masc:
-`/etc/default/docker DOCKER_OPTS="--dns 8.8.8.8"`
+```/etc/default/docker DOCKER_OPTS="--dns 8.8.8.8"```
 disable dns masc /etc/NetworkManager/NetworkManager.conf #dns=dnsmasq
 
 restart docker: sudo restart docker
@@ -42,7 +42,7 @@ restart docker: sudo restart docker
 * And a whole lot more!
 
 Simple docker run 
-` docker run ubuntu:14.04 /bin/echo 'Hello world'`
+``` docker run ubuntu:14.04 /bin/echo 'Hello world'```
 Hello world
 
 Using Flags:
