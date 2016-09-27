@@ -100,13 +100,13 @@ Maven plugin required (delivered by Transmode, Spotify)
         </plugin>
 ```
 
-`mvn package docker:build`
-`docker push mauermbq/gs-spring-boot-docker`
-`docker run -p 8080:8080 -t mauermbq/gs-spring-boot-docker`
+mvn package docker:build
+docker push mauermbq/gs-spring-boot-docker
+docker run -p 8080:8080 -t mauermbq/gs-spring-boot-docker
 
 Run spring app behind a reverse proxy (nginx container can be found on docker hub):
-`docker run --name nginx-container -v $(pwd)/html:/usr/share/nginx/html:ro --link spring-app:app -p 80:80 -d -t mauermbq/nginx_img_proxy`
+```docker run --name nginx-container -v $(pwd)/html:/usr/share/nginx/html:ro --link spring-app:app -p 80:80 -d -t mauermbq/nginx_img_proxy```
 
 Login in to nginx container and check for linked app container:
-`docker exec -it nginx-container bash`
-`env | grep APP | sort`
+```docker exec -it nginx-container bash```
+```env | grep APP | sort```
